@@ -1,25 +1,30 @@
-// lib/flutter_bluetooth_classic.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class FlutterBluetoothClassic {
-  static const MethodChannel _channel = MethodChannel('com.example/flutter_bluetooth_classic');
-  static const EventChannel _stateChannel = EventChannel('com.example/flutter_bluetooth_classic_state');
-  static const EventChannel _connectionChannel = EventChannel('com.example/flutter_bluetooth_classic_connection');
-  static const EventChannel _dataChannel = EventChannel('com.example/flutter_bluetooth_classic_data');
+  static const MethodChannel _channel =
+      MethodChannel('com.example/flutter_bluetooth_classic');
+  static const EventChannel _stateChannel =
+      EventChannel('com.example/flutter_bluetooth_classic_state');
+  static const EventChannel _connectionChannel =
+      EventChannel('com.example/flutter_bluetooth_classic_connection');
+  static const EventChannel _dataChannel =
+      EventChannel('com.example/flutter_bluetooth_classic_data');
 
   // Singleton instance
   static FlutterBluetoothClassic? _instance;
-  
+
   // Stream controllers
   final _stateStreamController = StreamController<BluetoothState>.broadcast();
-  final _connectionStreamController = StreamController<BluetoothConnectionState>.broadcast();
+  final _connectionStreamController =
+      StreamController<BluetoothConnectionState>.broadcast();
   final _dataStreamController = StreamController<BluetoothData>.broadcast();
 
   // Public streams that can be subscribed to
   Stream<BluetoothState> get onStateChanged => _stateStreamController.stream;
-  Stream<BluetoothConnectionState> get onConnectionChanged => _connectionStreamController.stream;
+  Stream<BluetoothConnectionState> get onConnectionChanged =>
+      _connectionStreamController.stream;
   Stream<BluetoothData> get onDataReceived => _dataStreamController.stream;
 
   /// Factory constructor to maintain a single instance of the class
@@ -76,7 +81,8 @@ class FlutterBluetoothClassic {
   /// Get paired devices
   Future<List<BluetoothDevice>> getPairedDevices() async {
     try {
-      final List<dynamic> devices = await _channel.invokeMethod('getPairedDevices');
+      final List<dynamic> devices =
+          await _channel.invokeMethod('getPairedDevices');
       return devices.map((device) => BluetoothDevice.fromMap(device)).toList();
     } catch (e) {
       throw BluetoothException('Failed to get paired devices: $e');
@@ -150,9 +156,9 @@ class FlutterBluetoothClassic {
 
 class BluetoothException implements Exception {
   final String message;
-  
+
   BluetoothException(this.message);
-  
+
   @override
   String toString() => 'BluetoothException: $message';
 }
@@ -160,9 +166,9 @@ class BluetoothException implements Exception {
 class BluetoothState {
   final bool isEnabled;
   final String status;
-  
+
   BluetoothState({required this.isEnabled, required this.status});
-  
+
   factory BluetoothState.fromMap(dynamic map) {
     return BluetoothState(
       isEnabled: map['isEnabled'],
@@ -175,13 +181,13 @@ class BluetoothDevice {
   final String name;
   final String address;
   final bool paired;
-  
+
   BluetoothDevice({
     required this.name,
     required this.address,
     required this.paired,
   });
-  
+
   factory BluetoothDevice.fromMap(dynamic map) {
     return BluetoothDevice(
       name: map['name'] ?? 'Unknown',
@@ -189,7 +195,7 @@ class BluetoothDevice {
       paired: map['paired'] ?? false,
     );
   }
-  
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -203,13 +209,13 @@ class BluetoothConnectionState {
   final bool isConnected;
   final String deviceAddress;
   final String status;
-  
+
   BluetoothConnectionState({
     required this.isConnected,
     required this.deviceAddress,
     required this.status,
   });
-  
+
   factory BluetoothConnectionState.fromMap(dynamic map) {
     return BluetoothConnectionState(
       isConnected: map['isConnected'],
@@ -222,16 +228,16 @@ class BluetoothConnectionState {
 class BluetoothData {
   final String deviceAddress;
   final List<int> data;
-  
+
   BluetoothData({
     required this.deviceAddress,
     required this.data,
   });
-  
+
   String asString() {
     return utf8.decode(data);
   }
-  
+
   factory BluetoothData.fromMap(dynamic map) {
     return BluetoothData(
       deviceAddress: map['deviceAddress'],

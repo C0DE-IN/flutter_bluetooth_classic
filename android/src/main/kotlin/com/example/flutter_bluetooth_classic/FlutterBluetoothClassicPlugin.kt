@@ -1,4 +1,3 @@
-// android/src/main/kotlin/com/example/flutter_bluetooth_classic/FlutterBluetoothClassicPlugin.kt
 package com.example.flutter_bluetooth_classic
 
 import android.Manifest
@@ -59,16 +58,16 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     context = flutterPluginBinding.applicationContext
     
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.example.flutter_bluetooth_classic")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic")
     channel.setMethodCallHandler(this)
     
-    stateChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example.flutter_bluetooth_classic_state")
+    stateChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_state")
     stateChannel.setStreamHandler(stateStreamHandler)
     
-    connectionChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example.flutter_bluetooth_classic_connection")
+    connectionChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_connection")
     connectionChannel.setStreamHandler(connectionStreamHandler)
     
-    dataChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example.flutter_bluetooth_classic_data")
+    dataChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_data")
     dataChannel.setStreamHandler(dataStreamHandler)
     
     // Initialize Bluetooth adapter
@@ -104,7 +103,7 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
           return
         }
         
-        checkPermissions { granted -> 
+        checkPermissions { granted ->
           if (granted) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             activity?.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
@@ -120,12 +119,12 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
           return
         }
         
-        checkPermissions { granted -> 
+        checkPermissions { granted ->
           if (granted) {
             val pairedDevices = bluetoothAdapter?.bondedDevices
             val devicesList = ArrayList<Map<String, Any>>()
             
-            pairedDevices?.forEach { device -> 
+            pairedDevices?.forEach { device ->
               val deviceMap = HashMap<String, Any>()
               deviceMap["name"] = device.name ?: "Unknown"
               deviceMap["address"] = device.address
@@ -145,7 +144,7 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
           return
         }
         
-        checkPermissions { granted -> 
+        checkPermissions { granted ->
           if (granted) {
             // Register for device discovery
             val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
@@ -165,7 +164,7 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
           return
         }
         
-        checkPermissions { granted -> 
+        checkPermissions { granted ->
           if (granted) {
             try {
               context.unregisterReceiver(discoveryReceiver)
@@ -192,7 +191,7 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
           return
         }
         
-        checkPermissions { granted -> 
+        checkPermissions { granted ->
           if (granted) {
             try {
               // Stop any ongoing discovery

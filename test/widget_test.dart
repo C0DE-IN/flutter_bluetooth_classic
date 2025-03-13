@@ -5,26 +5,32 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_bluetooth_classic/main.dart';
+import 'package:flutter_bluetooth_classic/flutter_bluetooth_classic.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  group('FlutterBluetoothClassic Tests', () {
+    late FlutterBluetoothClassic bluetooth;
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    setUp(() {
+      bluetooth = FlutterBluetoothClassic();
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('Instance should be singleton', () {
+      final instance1 = FlutterBluetoothClassic();
+      final instance2 = FlutterBluetoothClassic();
+      expect(instance1, equals(instance2));
+    });
+
+    test('Stream controllers should not be null', () {
+      expect(bluetooth.onStateChanged, isNotNull);
+      expect(bluetooth.onConnectionChanged, isNotNull);
+      expect(bluetooth.onDataReceived, isNotNull);
+    });
+
+    // Note: Most Bluetooth functionality cannot be tested without actual hardware
+    // These are just basic structural tests
   });
 }

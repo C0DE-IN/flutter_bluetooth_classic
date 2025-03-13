@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'bluetooth-classic-package.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,175 +7,116 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bluetooth Classic Demo',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const BluetoothDemo(),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class BluetoothDemo extends StatefulWidget {
-  const BluetoothDemo({Key? key}) : super(key: key);
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
 
   @override
-  State<BluetoothDemo> createState() => _BluetoothDemoState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _BluetoothDemoState extends State<BluetoothDemo> {
-  final FlutterBluetoothClassic _bluetooth = FlutterBluetoothClassic();
-  final List<BluetoothDevice> _devices = [];
-  final TextEditingController _messageController = TextEditingController();
-  String _status = 'Disconnected';
-  String _receivedData = '';
-  BluetoothDevice? _connectedDevice;
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _setupBluetoothListeners();
-  }
-
-  void _setupBluetoothListeners() {
-    _bluetooth.onStateChanged.listen((state) {
-      setState(() {
-        _status = state.status;
-      });
-    });
-
-    _bluetooth.onConnectionChanged.listen((connection) {
-      setState(() {
-        _status = connection.status;
-      });
-    });
-
-    _bluetooth.onDataReceived.listen((data) {
-      setState(() {
-        _receivedData += '${data.asString()}\n';
-      });
-    });
-  }
-
-  Future<void> _startDiscovery() async {
+  void _incrementCounter() {
     setState(() {
-      _devices.clear();
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
     });
-
-    try {
-      bool enabled = await _bluetooth.isBluetoothEnabled();
-      if (!enabled) {
-        await _bluetooth.enableBluetooth();
-      }
-      await _bluetooth.startDiscovery();
-    } catch (e) {
-      _showSnackBar('Error: $e');
-    }
-  }
-
-  Future<void> _connectToDevice(BluetoothDevice device) async {
-    try {
-      await _bluetooth.connect(device.address);
-      setState(() {
-        _connectedDevice = device;
-      });
-    } catch (e) {
-      _showSnackBar('Connection error: $e');
-    }
-  }
-
-  Future<void> _sendMessage() async {
-    if (_messageController.text.isEmpty) return;
-    try {
-      await _bluetooth.sendString(_messageController.text);
-      _messageController.clear();
-    } catch (e) {
-      _showSnackBar('Send error: $e');
-    }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth Classic Demo'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _startDiscovery,
-          ),
-        ],
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('Status: $_status'),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _devices.length,
-              itemBuilder: (context, index) {
-                final device = _devices[index];
-                return ListTile(
-                  title: Text(device.name),
-                  subtitle: Text(device.address),
-                  trailing: ElevatedButton(
-                    onPressed: () => _connectToDevice(device),
-                    child: const Text('Connect'),
-                  ),
-                );
-              },
-            ),
-          ),
-          if (_connectedDevice != null) ...[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(
-                  child: Text(_receivedData),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter message',
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _sendMessage,
-                  ),
-                ],
-              ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('You have pushed the button this many times:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
-        ],
+        ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
-  }
-
-  @override
-  void dispose() {
-    _bluetooth.dispose();
-    _messageController.dispose();
-    super.dispose();
   }
 }
