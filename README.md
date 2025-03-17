@@ -69,6 +69,20 @@ Add these keys to your Info.plist:
 
 Check the `example` folder for a complete working example.
 
+## Flutter implementation
+```
+// lib/flutter_bluetooth_classic.dart
+```
+## Android implementation
+```
+// android/src/main/kotlin/com/example/flutter_bluetooth_classic/FlutterBluetoothClassicPlugin.kt
+
+```
+## iOS implementation
+```
+// ios/Classes/SwiftFlutterBluetoothClassicPlugin.swift
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
