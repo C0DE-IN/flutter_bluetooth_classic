@@ -158,15 +158,5 @@ class FlutterBluetoothClassicWeb {
   }
 }
 
-// Register the plugin
+// Register the plugin globally
 window.flutterBluetoothClassicWeb = new FlutterBluetoothClassicWeb();
-
-// Plugin registration for Flutter Web
-if (window.flutter_js) {
-  window.flutter_js.loader.didCreateEngineInitializer = async function(engineInitializer) {
-    const engine = await engineInitializer.initializeEngine();
-    engine.plugins = engine.plugins || {};
-    engine.plugins.FlutterBluetoothClassicPlugin = window.flutterBluetoothClassicWeb;
-    return engine;
-  };
-}

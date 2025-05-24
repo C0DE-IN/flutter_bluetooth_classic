@@ -27,6 +27,9 @@ flutter:
         pluginClass: FlutterBluetoothClassicPlugin
       ios:
         pluginClass: SwiftFlutterBluetoothClassicPlugin
-      # web:
-      #   pluginClass: FlutterBluetoothClassicWeb
-      #   fileName: flutter_bluetooth_classic_web.dart
+      windows:
+        pluginClass: FlutterBluetoothClassicPluginCApi
+        fileName: flutter_bluetooth_classic_plugin_c_api.cpp
+      web:
+        pluginClass: FlutterBluetoothClassicWeb
+        fileName: flutter_bluetooth_classic_web.dart
