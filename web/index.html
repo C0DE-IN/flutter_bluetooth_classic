@@ -34,5 +34,37 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bluetooth_classic_web.js"></script>
+  
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+  
+  <!-- Enhanced Web Bluetooth support -->
+  <script>
+    if ('bluetooth' in navigator) {
+      console.log('Web Bluetooth API is supported');
+      
+      // Handle Bluetooth availability changes
+      navigator.bluetooth.addEventListener('availabilitychanged', function(event) {
+        console.log('Bluetooth availability changed:', event.value);
+      });
+    } else {
+      console.log('Web Bluetooth API is not supported');
+      console.log('Please use a compatible browser with HTTPS connection');
+    }
+  </script>
 </body>
 </html>

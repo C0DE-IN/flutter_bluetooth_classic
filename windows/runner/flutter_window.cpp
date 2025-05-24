@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
+#include "flutter_bluetooth_classic_plugin.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -26,6 +27,10 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
+
+  // Register the Bluetooth Classic plugin
+  FlutterBluetoothClassicPluginRegisterWithRegistrar(
+      flutter_controller_->engine()->GetRegistrar("flutter_bluetooth_classic"));
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
