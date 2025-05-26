@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class FlutterBluetoothClassic {
-  static const MethodChannel _channel =
-      MethodChannel('com.example/flutter_bluetooth_classic');
-  static const EventChannel _stateChannel =
-      EventChannel('com.example/flutter_bluetooth_classic_state');
-  static const EventChannel _connectionChannel =
-      EventChannel('com.example/flutter_bluetooth_classic_connection');
-  static const EventChannel _dataChannel =
-      EventChannel('com.example/flutter_bluetooth_classic_data');
+  static const MethodChannel _channel = MethodChannel(
+      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic');
+  static const EventChannel _stateChannel = EventChannel(
+      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_state');
+  static const EventChannel _connectionChannel = EventChannel(
+      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_connection');
+  static const EventChannel _dataChannel = EventChannel(
+      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_data');
 
   // Singleton instance
   static FlutterBluetoothClassic? _instance;

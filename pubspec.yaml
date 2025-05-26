@@ -1,23 +1,24 @@
 name: flutter_bluetooth_classic
-description: A Flutter plugin for Bluetooth Classic communication supporting both Android and iOS platforms.
-version: 1.0.0
-homepage: https://github.com/C0DE-IN/flutter_bluetooth_classic.git
+description: A Flutter plugin for Bluetooth Classic communication on Android, iOS, and Windows platforms. Supports device discovery, connection management, and data transmission.
+version: 1.0.1
+homepage: https://github.com/C0DE-IN/flutter_bluetooth_classic
+repository: https://github.com/C0DE-IN/flutter_bluetooth_classic.git
+issue_tracker: https://github.com/C0DE-IN/flutter_bluetooth_classic/issues
+documentation: https://github.com/C0DE-IN/flutter_bluetooth_classic/blob/main/README.md
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
-  flutter: ">=3.0.0"
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
-  plugin_platform_interface: ^2.1.0
+  plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   plugin:
@@ -26,10 +27,14 @@ flutter:
         package: com.example.flutter_bluetooth_classic
         pluginClass: FlutterBluetoothClassicPlugin
       ios:
-        pluginClass: SwiftFlutterBluetoothClassicPlugin
+        pluginClass: FlutterBluetoothClassicPlugin
       windows:
-        pluginClass: FlutterBluetoothClassicPluginCApi
-        fileName: flutter_bluetooth_classic_plugin_c_api.cpp
-      web:
-        pluginClass: FlutterBluetoothClassicWeb
-        fileName: flutter_bluetooth_classic_web.dart
+        pluginClass: FlutterBluetoothClassicPlugin
+        fileName: flutter_bluetooth_classic_plugin.cpp
+
+topics:
+  - bluetooth
+  - bluetooth-classic
+  - communication
+  - serial
+  - connectivity

@@ -1,0 +1,11 @@
+# Files to ignore when publishing to pub.dev
+example/pubspec.yaml
+.git/
+.vscode/
+build/
+android/build/
+ios/build/
+windows/build/
+macos/build/
+linux/build/
+web/build/
