@@ -6,7 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_bluetooth_classic/flutter_bluetooth_classic.dart';
+import 'package:flutter_bluetooth_classic_serial/flutter_bluetooth_classic.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
