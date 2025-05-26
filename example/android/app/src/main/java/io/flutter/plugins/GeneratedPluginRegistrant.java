@@ -18,7 +18,7 @@ public final class GeneratedPluginRegistrant {
     try {
       flutterEngine.getPlugins().add(new com.example.flutter_bluetooth_classic.FlutterBluetoothClassicPlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin flutter_bluetooth_classic, com.example.flutter_bluetooth_classic.FlutterBluetoothClassicPlugin", e);
+      Log.e(TAG, "Error registering plugin flutter_bluetooth_classic_serial, com.example.flutter_bluetooth_classic.FlutterBluetoothClassicPlugin", e);
     }
   }
 }

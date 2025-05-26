@@ -9,7 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_bluetooth_classic: ^1.0.1
+  flutter_bluetooth_classic_serial:
+    path: ../
 
 dev_dependencies:
   flutter_test:

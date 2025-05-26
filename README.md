@@ -27,7 +27,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_bluetooth_classic: ^1.0.0
+  flutter_bluetooth_classic_serial: ^1.0.1
 ```
 
 Then run:
@@ -74,7 +74,7 @@ Bluetooth capability is automatically included in the Windows implementation.
 ### Basic Example
 
 ```dart
-import 'package:flutter_bluetooth_classic/flutter_bluetooth_classic.dart';
+import 'package:flutter_bluetooth_classic_serial/flutter_bluetooth_classic.dart';
 
 class BluetoothService {
   final FlutterBluetoothClassic _bluetooth = FlutterBluetoothClassic.instance;
@@ -120,7 +120,7 @@ class BluetoothService {
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_classic/flutter_bluetooth_classic.dart';
+import 'package:flutter_bluetooth_classic_serial/flutter_bluetooth_classic.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override

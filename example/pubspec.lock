@@ -54,7 +54,7 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_bluetooth_classic:
+  flutter_bluetooth_classic_serial:
     dependency: "direct main"
     description:
       path: ".."
