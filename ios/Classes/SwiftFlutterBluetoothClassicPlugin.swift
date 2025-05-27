@@ -19,12 +19,11 @@ public class SwiftFlutterBluetoothClassicPlugin: NSObject, FlutterPlugin {
     let instance = SwiftFlutterBluetoothClassicPlugin(registrar: registrar)
     registrar.addMethodCallDelegate(instance, channel: instance.methodChannel)
   }
-  
-  init(registrar: FlutterPluginRegistrar) {
-    methodChannel = FlutterMethodChannel(name: "com.example.flutter_bluetooth_classic", binaryMessenger: registrar.messenger())
-    stateChannel = FlutterEventChannel(name: "com.example.flutter_bluetooth_classic_state", binaryMessenger: registrar.messenger())
-    connectionChannel = FlutterEventChannel(name: "com.example.flutter_bluetooth_classic_connection", binaryMessenger: registrar.messenger())
-    dataChannel = FlutterEventChannel(name: "com.example.flutter_bluetooth_classic_data", binaryMessenger: registrar.messenger())
+    init(registrar: FlutterPluginRegistrar) {
+    methodChannel = FlutterMethodChannel(name: "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic", binaryMessenger: registrar.messenger())
+    stateChannel = FlutterEventChannel(name: "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_state", binaryMessenger: registrar.messenger())
+    connectionChannel = FlutterEventChannel(name: "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_connection", binaryMessenger: registrar.messenger())
+    dataChannel = FlutterEventChannel(name: "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_data", binaryMessenger: registrar.messenger())
     
     super.init()
     

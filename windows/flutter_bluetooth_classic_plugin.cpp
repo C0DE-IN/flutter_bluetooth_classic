@@ -18,29 +18,28 @@ namespace flutter_bluetooth_classic {
 
 // static
 void FlutterBluetoothClassicPlugin::RegisterWithRegistrar(
-    flutter::PluginRegistrarWindows* registrar) {
-  // Register the main channel
+    flutter::PluginRegistrarWindows* registrar) {  // Register the main channel
   auto main_channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "com.example/flutter_bluetooth_classic",
+          registrar->messenger(), "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic",
           &flutter::StandardMethodCodec::GetInstance());
 
   // Register the state channel
   auto state_channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "com.example/flutter_bluetooth_classic_state",
+          registrar->messenger(), "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_state",
           &flutter::StandardMethodCodec::GetInstance());
 
   // Register the data channel
   auto data_channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "com.example/flutter_bluetooth_classic_data",
+          registrar->messenger(), "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_data",
           &flutter::StandardMethodCodec::GetInstance());
 
   // Register the connection channel
   auto connection_channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "com.example/flutter_bluetooth_classic_connection",
+          registrar->messenger(), "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_connection",
           &flutter::StandardMethodCodec::GetInstance());
 
   auto plugin = std::make_unique<FlutterBluetoothClassicPlugin>();

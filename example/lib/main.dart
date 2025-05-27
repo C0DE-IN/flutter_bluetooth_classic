@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:async';
+import 'package:flutter_bluetooth_classic_serial/flutter_bluetooth_classic.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -12,521 +11,449 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Bluetooth Classic Example',
+      title: 'Bluetooth Classic Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const BluetoothScreen(),
+      home: const BluetoothClassicDemo(),
     );
   }
 }
 
-class BluetoothScreen extends StatefulWidget {
-  const BluetoothScreen({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
 
   @override
-  BluetoothScreenState createState() => BluetoothScreenState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class BluetoothScreenState extends State<BluetoothScreen> {
-  static const MethodChannel _mainChannel = MethodChannel(
-      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic');
-  static const MethodChannel _stateChannel = MethodChannel(
-      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_state');
-  static const MethodChannel _dataChannel = MethodChannel(
-      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_data');
-  static const MethodChannel _connectionChannel = MethodChannel(
-      'com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_connection');
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
 
-  List<Map<String, dynamic>> _devices = [];
-  Map<String, dynamic>? _connectedDevice;
-  bool _isScanning = false;
-  bool _isConnected = false;
-  bool _bluetoothEnabled = false;
-  final List<String> _receivedMessages = [];
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('You have pushed the button this many times:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class BluetoothClassicDemo extends StatefulWidget {
+  const BluetoothClassicDemo({super.key});
+
+  @override
+  State<BluetoothClassicDemo> createState() => _BluetoothClassicDemoState();
+}
+
+class _BluetoothClassicDemoState extends State<BluetoothClassicDemo> {
+  late FlutterBluetoothClassic _bluetooth;
+  bool _isBluetoothAvailable = false;
+  BluetoothConnectionState? _connectionState;
+  List<BluetoothDevice> _pairedDevices = [];
+  BluetoothDevice? _connectedDevice;
+  String _receivedData = '';
   final TextEditingController _messageController = TextEditingController();
-  Timer? _dataPollingTimer;
 
   @override
   void initState() {
     super.initState();
-    _initializeBluetooth();
+    _bluetooth = FlutterBluetoothClassic();
+    _initBluetooth();
   }
 
-  @override
-  void dispose() {
-    _dataPollingTimer?.cancel();
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _initializeBluetooth() async {
+  Future<void> _initBluetooth() async {
     try {
-      // Check if Bluetooth is available and enabled
-      bool isAvailable = await _stateChannel.invokeMethod('isAvailable');
-      bool isEnabled = await _stateChannel.invokeMethod('isEnabled');
-
+      bool isSupported = await _bluetooth.isBluetoothSupported();
+      bool isEnabled = await _bluetooth.isBluetoothEnabled();
       setState(() {
-        _bluetoothEnabled = isAvailable && isEnabled;
+        _isBluetoothAvailable = isSupported && isEnabled;
       });
 
-      if (_bluetoothEnabled) {
+      if (isSupported && isEnabled) {
         _loadPairedDevices();
+        _listenToConnectionState();
+        _listenToIncomingData();
       }
     } catch (e) {
-      _showError('Failed to initialize Bluetooth: $e');
+      debugPrint('Error initializing Bluetooth: $e');
     }
   }
 
   Future<void> _loadPairedDevices() async {
     try {
-      final List<dynamic> devices =
-          await _connectionChannel.invokeMethod('getPairedDevices');
+      List<BluetoothDevice> devices = await _bluetooth.getPairedDevices();
       setState(() {
-        _devices = devices.cast<Map<String, dynamic>>();
+        _pairedDevices = devices;
       });
     } catch (e) {
-      _showError('Failed to load paired devices: $e');
+      debugPrint('Error loading paired devices: $e');
     }
   }
 
-  Future<void> _startDiscovery() async {
-    if (_isScanning) return;
-
-    setState(() {
-      _isScanning = true;
+  void _listenToConnectionState() {
+    _bluetooth.onConnectionChanged.listen((state) {
+      setState(() {
+        _connectionState = state;
+        if (state.isConnected) {
+          // Find the connected device
+          _connectedDevice = _pairedDevices.firstWhere(
+            (device) => device.address == state.deviceAddress,
+            orElse: () => BluetoothDevice(
+              name: 'Unknown Device',
+              address: state.deviceAddress,
+              paired: false,
+            ),
+          );
+        } else {
+          _connectedDevice = null;
+        }
+      });
     });
-
-    try {
-      final List<dynamic> devices =
-          await _connectionChannel.invokeMethod('startDiscovery');
-      setState(() {
-        _devices = devices.cast<Map<String, dynamic>>();
-        _isScanning = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isScanning = false;
-      });
-      _showError('Failed to start discovery: $e');
-    }
   }
 
-  Future<void> _connectToDevice(Map<String, dynamic> device) async {
-    if (_isConnected) {
-      _showError('Already connected to a device. Disconnect first.');
-      return;
-    }
-
-    try {
-      _showInfo('Connecting to ${device['name']}...');
-
-      bool connected = await _mainChannel.invokeMethod('connect', {
-        'address': device['address'],
+  void _listenToIncomingData() {
+    _bluetooth.onDataReceived.listen((data) {      setState(() {
+        _receivedData += '${data.asString()}\n';
       });
+    });
+  }
 
-      if (connected) {
-        setState(() {
-          _connectedDevice = device;
-          _isConnected = true;
-        });
-
-        // Start listening for data
-        await _dataChannel.invokeMethod('listen', {
-          'device': device['address'],
-        });
-
-        // Start polling for data
-        _startDataPolling();
-
-        _showSuccess('Connected to ${device['name']}');
-      } else {
-        _showError('Failed to connect to ${device['name']}');
-      }
+  Future<void> _connectToDevice(BluetoothDevice device) async {
+    try {
+      await _bluetooth.connect(device.address);
     } catch (e) {
-      _showError('Connection error: $e');
+      debugPrint('Error connecting to device: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to connect: $e')));
+      }
     }
   }
 
   Future<void> _disconnect() async {
-    if (!_isConnected || _connectedDevice == null) return;
-
     try {
-      await _mainChannel.invokeMethod('disconnect', {
-        'address': _connectedDevice!['address'],
-      });
-
-      _dataPollingTimer?.cancel();
-
-      setState(() {
-        _connectedDevice = null;
-        _isConnected = false;
-        _receivedMessages.clear();
-      });
-
-      _showSuccess('Disconnected successfully');
+      await _bluetooth.disconnect();
     } catch (e) {
-      _showError('Disconnect error: $e');
+      debugPrint('Error disconnecting: $e');
     }
-  }
-
-  void _startDataPolling() {
-    _dataPollingTimer =
-        Timer.periodic(const Duration(milliseconds: 100), (timer) async {
-      if (!_isConnected || _connectedDevice == null) {
-        timer.cancel();
-        return;
-      }
-
-      try {
-        int available = await _mainChannel.invokeMethod('available', {
-          'address': _connectedDevice!['address'],
-        });
-
-        if (available > 0) {
-          String data = await _mainChannel.invokeMethod('readData', {
-            'address': _connectedDevice!['address'],
-          });
-
-          if (data.isNotEmpty) {
-            setState(() {
-              _receivedMessages
-                  .add('${DateTime.now().toString().substring(11, 19)}: $data');
-            });
-          }
-        }
-      } catch (e) {
-        // Silently handle polling errors to avoid spam
-      }
-    });
   }
 
   Future<void> _sendMessage() async {
-    if (!_isConnected || _connectedDevice == null) {
-      _showError('Not connected to any device');
-      return;
-    }
-
-    String message = _messageController.text.trim();
-    if (message.isEmpty) {
-      _showError('Please enter a message');
-      return;
-    }
-
-    try {
-      bool sent = await _mainChannel.invokeMethod('writeData', {
-        'address': _connectedDevice!['address'],
-        'data': '$message\n', // Add newline for better compatibility
-      });
-
-      if (sent) {
-        setState(() {
-          _receivedMessages.add(
-              '${DateTime.now().toString().substring(11, 19)}: SENT: $message');
-        });
+    if (_messageController.text.isNotEmpty &&
+        _connectionState?.isConnected == true) {
+      try {
+        await _bluetooth.sendString(_messageController.text);
         _messageController.clear();
-      } else {
-        _showError('Failed to send message');
+      } catch (e) {
+        debugPrint('Error sending message: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
+        }
       }
-    } catch (e) {
-      _showError('Send error: $e');
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showInfo(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth Classic Example'),
-        actions: [
-          if (!_bluetoothEnabled)
-            const Icon(Icons.bluetooth_disabled, color: Colors.red)
-          else if (_isConnected)
-            const Icon(Icons.bluetooth_connected, color: Colors.green)
-          else
-            const Icon(Icons.bluetooth, color: Colors.white),
-        ],
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Bluetooth Classic Demo'),
       ),
-      body: !_bluetoothEnabled
-          ? _buildBluetoothDisabledView()
-          : _isConnected
-              ? _buildConnectedView()
-              : _buildDeviceListView(),
-    );
-  }
-
-  Widget _buildBluetoothDisabledView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.bluetooth_disabled, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text(
-            'Bluetooth is not available or enabled',
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _initializeBluetooth,
-            child: const Text('Retry'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeviceListView() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isScanning ? null : _startDiscovery,
-                  icon: _isScanning
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.search),
-                  label: Text(_isScanning ? 'Scanning...' : 'Scan for Devices'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              ElevatedButton.icon(
-                onPressed: _loadPairedDevices,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Paired'),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _devices.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.devices, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'No devices found',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Tap "Scan for Devices" to discover nearby devices',
-                        style: TextStyle(color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _devices.length,
-                  itemBuilder: (context, index) {
-                    final device = _devices[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.bluetooth,
-                          color: device['isConnected'] == true
-                              ? Colors.green
-                              : Colors.blue,
-                        ),
-                        title: Text(device['name'] ?? 'Unknown Device'),
-                        subtitle: Text(device['address'] ?? ''),
-                        trailing: ElevatedButton(
-                          onPressed: () => _connectToDevice(device),
-                          child: const Text('Connect'),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildConnectedView() {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          color: Colors.green.shade50,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.bluetooth_connected, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Bluetooth Status
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bluetooth Status',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
-                        Text(
-                          'Connected to:',
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        Icon(
+                          _isBluetoothAvailable
+                              ? Icons.bluetooth
+                              : Icons.bluetooth_disabled,
+                          color: _isBluetoothAvailable
+                              ? Colors.blue
+                              : Colors.grey,
                         ),
+                        const SizedBox(width: 8),
                         Text(
-                          _connectedDevice!['name'] ?? 'Unknown Device',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          _connectedDevice!['address'] ?? '',
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          _isBluetoothAvailable ? 'Available' : 'Not Available',
                         ),
                       ],
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _disconnect,
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: const Text('Disconnect'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Messages:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          _connectionState?.isConnected == true
+                              ? Icons.link
+                              : Icons.link_off,
+                          color: _connectionState?.isConnected == true
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(_connectionState?.status ?? 'disconnected'),
+                      ],
                     ),
-                    child: _receivedMessages.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No messages yet...\nSend a message or wait for incoming data',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            reverse: true,
-                            padding: const EdgeInsets.all(8),
-                            itemCount: _receivedMessages.length,
-                            itemBuilder: (context, index) {
-                              final message = _receivedMessages[
-                                  _receivedMessages.length - 1 - index];
-                              final isSent = message.contains('SENT:');
-                              return Container(
-                                margin: const EdgeInsets.symmetric(vertical: 2),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isSent
-                                      ? Colors.blue.shade50
-                                      : Colors.green.shade50,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  message,
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 12,
-                                    color: isSent
-                                        ? Colors.blue.shade800
-                                        : Colors.green.shade800,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
+                    if (_connectedDevice != null) ...[
+                      const SizedBox(height: 8),
+                      Text('Connected to: ${_connectedDevice!.name}'),
+                      Text('Address: ${_connectedDevice!.address}'),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            border: Border(top: BorderSide(color: Colors.grey.shade300)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _messageController,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter message to send...',
-                    border: OutlineInputBorder(),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+
+            const SizedBox(height: 16),
+
+            // Paired Devices
+            Expanded(
+              flex: 2,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Paired Devices',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          IconButton(
+                            onPressed: _loadPairedDevices,
+                            icon: const Icon(Icons.refresh),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: _pairedDevices.isEmpty
+                            ? const Center(
+                                child: Text('No paired devices found'),
+                              )
+                            : ListView.builder(
+                                itemCount: _pairedDevices.length,
+                                itemBuilder: (context, index) {
+                                  final device = _pairedDevices[index];
+                                  final isConnected =
+                                      _connectedDevice?.address ==
+                                      device.address;
+                                  return ListTile(
+                                    leading: Icon(
+                                      Icons.devices,
+                                      color: isConnected ? Colors.green : null,
+                                    ),
+                                    title: Text(device.name),
+                                    subtitle: Text(device.address),
+                                    trailing: isConnected
+                                        ? ElevatedButton(
+                                            onPressed: _disconnect,
+                                            child: const Text('Disconnect'),
+                                          )
+                                        : ElevatedButton(
+                                            onPressed:
+                                                _connectionState?.isConnected !=
+                                                    true
+                                                ? () => _connectToDevice(device)
+                                                : null,
+                                            child: const Text('Connect'),
+                                          ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
                   ),
-                  onSubmitted: (_) => _sendMessage(),
                 ),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _sendMessage,
-                child: const Text('Send'),
+            ),
+
+            const SizedBox(height: 16), // Message Section
+            if (_connectionState?.isConnected == true) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Send Message',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _messageController,
+                              decoration: const InputDecoration(
+                                hintText: 'Enter message to send',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _sendMessage,
+                            child: const Text('Send'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
+              const SizedBox(height: 16),
             ],
-          ),
+
+            // Received Data
+            Expanded(
+              flex: 1,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Received Data',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _receivedData = '';
+                              });
+                            },
+                            icon: const Icon(Icons.clear),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Text(
+                              _receivedData.isEmpty
+                                  ? 'No data received'
+                                  : _receivedData,
+                              style: const TextStyle(fontFamily: 'monospace'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 }

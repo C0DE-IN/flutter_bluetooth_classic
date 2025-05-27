@@ -54,20 +54,19 @@ class FlutterBluetoothClassicPlugin: FlutterPlugin, MethodCallHandler, ActivityA
   
   // SPP UUID for Bluetooth Classic communication
   private val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-  
-  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     context = flutterPluginBinding.applicationContext
     
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic")
     channel.setMethodCallHandler(this)
     
-    stateChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_state")
+    stateChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_state")
     stateChannel.setStreamHandler(stateStreamHandler)
     
-    connectionChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_connection")
+    connectionChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_connection")
     connectionChannel.setStreamHandler(connectionStreamHandler)
     
-    dataChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.example/flutter_bluetooth_classic_data")
+    dataChannel = EventChannel(flutterPluginBinding.binaryMessenger, "com.flutter_bluetooth_classic.plugin/flutter_bluetooth_classic_data")
     dataChannel.setStreamHandler(dataStreamHandler)
     
     // Initialize Bluetooth adapter

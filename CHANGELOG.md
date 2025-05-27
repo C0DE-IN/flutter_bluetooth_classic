@@ -1,3 +1,14 @@
+## 1.0.2
+
+### Bug Fixes
+- 🔧 Fixed MissingPluginException errors by correcting channel name mismatches
+- ✅ Updated Android, iOS, and Windows plugin implementations with proper channel names
+- 🛠️ Fixed Android Bluetooth permissions in plugin manifest
+- 📱 Created working example app with comprehensive Bluetooth demo
+- 🔍 Fixed API usage in example to match singleton pattern
+- ⚡ Improved error handling and user feedback in example app
+- 🎯 Added support for Android 12+ Bluetooth permissions
+
 ## 1.0.1
 
 ### Bug Fixes
