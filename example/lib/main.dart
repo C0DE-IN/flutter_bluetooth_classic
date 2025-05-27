@@ -181,7 +181,8 @@ class _BluetoothClassicDemoState extends State<BluetoothClassicDemo> {
   }
 
   void _listenToIncomingData() {
-    _bluetooth.onDataReceived.listen((data) {      setState(() {
+    _bluetooth.onDataReceived.listen((data) {
+      setState(() {
         _receivedData += '${data.asString()}\n';
       });
     });
