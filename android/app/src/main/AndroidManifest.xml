@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="flutter_bluetooth_classic"
+        android:label="flutter_bluetooth_classic_serial"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

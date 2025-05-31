@@ -256,4 +256,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please file an issue on our [GitHub repository](https://github.com/C0DE-IN/flutter_bluetooth_classic/issues).
+If you encounter any issues or have questions, please file an issue on our [GitHub repository](https://github.com/C0DE-IN/flutter_bluetooth_classic_serial/issues).
